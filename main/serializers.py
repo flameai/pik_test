@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from main.models import *
 
-class WorldBorderSerializer(serializers.ModelSerializer):
+class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WorldBorder
+        model = Zone
         fields = '__all__'
 

@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib.gis import admin
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from main.views import WorldBorderViewSet
+from main.views import ZoneViewSet
 
 router = DefaultRouter()
-router.register('worldborders', WorldBorderViewSet)
+router.register('Zones', ZoneViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),    

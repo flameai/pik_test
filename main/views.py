@@ -1,9 +1,9 @@
 from rest_framework.viewsets import ModelViewSet
-from main.models import WorldBorder
-from main.serializers import WorldBorderSerializer
+from main.models import Zone
+from main.serializers import ZoneSerializer
 
 # Create your views here.
 
-class WorldBorderViewSet(ModelViewSet):
-    serializer_class = WorldBorderSerializer
-    queryset = WorldBorder.objects.all()
+class ZoneViewSet(ModelViewSet):
+    serializer_class = ZoneSerializer
+    queryset = Zone.objects.all()

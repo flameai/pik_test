@@ -3,4 +3,4 @@ from main.models import *
 
 # Register your models here.
 
-admin.site.register(WorldBorder, admin.GeoModelAdmin)
+admin.site.register(Zone, admin.GeoModelAdmin)
