@@ -1,27 +1,27 @@
 from rest_framework import serializers
-from main.models import Partner, Zone, Service, ServiceType
+from main.models import Provider, Zone, Service, ServiceType
 from django.core.exceptions import ValidationError
 
 
-class ServiceTypeSerializer(serializer.ModelSerializer):
+class ServiceTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        models = ServiceType
+        model = ServiceType
         fields = '__all__'
 
 class ServiceSerializer(serializers.ModelSerializer):
-    service_type = ServiceTypeSerializer(many=True)
+    service_type = ServiceTypeSerializer()
     class Meta:
         model = Service
         fields = '__all__'
 
-class PartnerSerializer(serializers.ModelSerializer):
+class ProviderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Partner
+        model = Provider
         fields = '__all__'
 
 class ZoneSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True)
-    partner = PartnerSerializer()
+    provider = ProviderSerializer()
 
     class Meta:
         model = Zone

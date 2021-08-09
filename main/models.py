@@ -5,11 +5,15 @@ from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
+
 class ServiceType(models.Model):
     """
     Модель типа услуги
     """
     name = models.CharField(max_length=250, verbose_name="наименование типа услуги")
+
+    def __str__(self):
+        return self.name
 
 
 class Provider(models.Model):
@@ -44,7 +48,7 @@ class Service(models.Model):
     name = models.CharField(max_length=250, verbose_name="наименование услуги")
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE, verbose_name="зона обслуживания", null=False, blank=False, related_name="services")
     service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE, verbose_name="тип услуги", null=False, blank=False, related_name="services")
-    cost = models.DecimalField(max_digits=2, decimal_places=2, verbose_name="стоимость услуги", null=False, blank=False)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="стоимость услуги", null=False, blank=False)
 
     def __str__(self):
         return self.name
@@ -58,7 +62,7 @@ class Service(models.Model):
         """
 
         # qs зон данного поставщика, которые имеют пересечения
-        self_intersected_zones_qs = Zone.objects.filter(mpoly__intersects=self.zone, provider=self.zone.provider)
+        self_intersected_zones_qs = Zone.objects.filter(mpoly__intersects=self.zone.mpoly, provider=self.zone.provider)
         if not self_intersected_zones_qs.exists():
             return
 
