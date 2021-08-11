@@ -92,6 +92,12 @@ class Zone(models.Model, ManagebleByUserMixin, CreatableByUserMixin, UpdatebleBy
         return data['provider'] in user.providers.all().values_list('pk', flat=True)
 
     def can_update(self, user, data):
+        """
+        Возвращает True, если пользователь является менеджером поставщика зоны
+        и не пытается передать зону чужому провайдеру
+        """
+        if self.provider.manager != user:
+            return False
         if 'provider' in data and self.provider != data['provider']:
             # Попытка смены поставщика
             return Zone.can_create(user, data)
@@ -119,7 +125,12 @@ class Service(models.Model, ManagebleByUserMixin, CreatableByUserMixin, Updatebl
         return data['zone'] in Zone.objects.filter(provider__manager=user).values_list('pk', flat=True)
     
     def can_update(self, user, data):
-        # Сменить зону можно только на одну из своих
+        """
+        Возвращает True, если пользователь является менеджером поставщика зоны
+        и не пытается передать услугу в чужую зону
+        """
+        if self.zone.provider.manager != user:
+            return False        
         if 'zone' in data and data['zone'] != self.zone.pk:
             return Service.can_create(user,data)
         return True
