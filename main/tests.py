@@ -12,11 +12,10 @@ from main import serializers
 
 class CreateProvider(TestCase):
     def setUp(self):
-        self.vasya = User.objects.create(username='vasya', email='vasya@mail.com', password='password')
-        self.petya = User.objects.create(username='petya', email='petya@mail.com', password='password')
+        self.vasya = User.objects.create(username='vasya', email='vasya@mail.com', password='password')        
 
     def test_users_can_create_only_own_provider(self):
-        """Пользователь может сделать поставщика и автоматически стать там менеджером"""        
+        """Пользователь может сделать поставщика и автоматически стать его менеджером"""
         factory = APIRequestFactory()
         view = ProviderViewSet.as_view({'post':'create'})
         data = {'name': 'Васин новый поставщик', 'email': self.vasya.email, 'address':'Ленина 129', 'phone': '323233422'}
