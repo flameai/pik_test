@@ -6,6 +6,37 @@ from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
 
+class ManagebleByUserMixin:
+    """
+    Миксин для определения интерфейсов того, что у сущности есть менеджер
+    """
+    def is_manager(self, user):
+        return False
+
+
+class CreatableByUserMixin:
+    """
+    Миксин сущности, которая может быть создана пользователем
+    """
+    @classmethod
+    def can_create(cls, user, data):
+        """
+        Возвращает истину, если из данных data пользователю разрешено создать сущность
+        """
+        return False
+
+
+class UpdatebleByUserMixin:
+    """
+    Миксин сущности, которая может быть обновлена пользователем
+    """    
+    def can_update(self, user, data):
+        """
+        Возвращает истину, если с новыми данными data пользователю разрешено сохранить сущность
+        """
+        return False
+
+
 class ServiceType(models.Model):
     """
     Модель типа услуги
@@ -16,7 +47,7 @@ class ServiceType(models.Model):
         return self.name
 
 
-class Provider(models.Model):
+class Provider(models.Model, ManagebleByUserMixin, CreatableByUserMixin, UpdatebleByUserMixin):
     """
     Модель поставщика услуги
     """
@@ -29,8 +60,20 @@ class Provider(models.Model):
     def __str__(self):
         return self.name
 
+    def is_manager(self, user):
+        return self.manager == user
 
-class Zone(models.Model):
+    @classmethod
+    def can_create(self, user, data):
+        # Пользователь может создать поставщика и сразу же станет его менеджером
+        return True
+
+    def can_update(self, user, data):
+        # Пользователь всегда сможет обновить Поставщика
+        return True
+
+
+class Zone(models.Model, ManagebleByUserMixin, CreatableByUserMixin, UpdatebleByUserMixin):
     """
     Модель зоны обслуживания
     """
@@ -41,7 +84,21 @@ class Zone(models.Model):
     def __str__(self):
         return self.name
 
-class Service(models.Model):
+    def is_manager(self, user):
+        return self.provider.manager == user
+
+    @classmethod
+    def can_create(cls, user, data):
+        return data['provider'] in user.providers.all().values_list('pk', flat=True)
+
+    def can_update(self, user, data):
+        if 'provider' in data and self.provider != data['provider']:
+            # Попытка смены поставщика
+            return Zone.can_create(user, data)
+        return True
+    
+
+class Service(models.Model, ManagebleByUserMixin, CreatableByUserMixin, UpdatebleByUserMixin):
     """
     Модель услуги, оказываемой в рамках одной зоны
     """
@@ -52,13 +109,27 @@ class Service(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def is_manager(self, user):
+        return self.zone.provider.manager == user
+
+    @classmethod
+    def can_create(cls, user, data):
+        # Пользователь может создать услугу только в своих зонах        
+        return data['zone'] in Zone.objects.filter(provider__manager=user).values_list('pk', flat=True)
+    
+    def can_update(self, user, data):
+        # Сменить зону можно только на одну из своих
+        if 'zone' in data and data['zone'] != self.zone.pk:
+            return Service.can_create(user,data)
+        return True
 
     def clean(self):
         """
-        Метод проверки того, что для данной услуги зоны нет пересечений с другими зонами,
-        Например, для района Южное Бутово не должно быть пересечения с другим участком.
-        А если пересечение есть, то для этих двух участков не должно быть одинаковых типов услуг,
-        т.к. это противоречит здравому смыслу        
+        Проверка того, что для данной услуги зоны нет пересечений с другими зонами,
+        Например, для района Южное Бутово не должно быть пересечения с другим участком 
+        одного и того же поставщика с одинаковым типом услуг,
+        т.к. это противоречит здравому смыслу
         """
 
         # qs зон данного поставщика, которые имеют пересечения

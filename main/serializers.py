@@ -20,6 +20,17 @@ class ServiceSerializerWrite(serializers.ModelSerializer):
         model = Service
         fields = '__all__'
 
+    def validate(self, data):
+        # Проведем валидацию по правилам модели
+        tmp_obj = Service(**data)
+        try:
+            tmp_obj.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError(e)
+
+        return data
+    
+
 class ProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Provider
@@ -43,20 +54,4 @@ class ZoneSerializerWrite(serializers.ModelSerializer):
     class Meta:
         model = Zone
         fields = '__all__'
-
-    def validate(self, data):
-
-        # Проведем валидацию по правилам модели
-        tmp_obj = Zone(**data)
-        try:
-            tmp_obj.clean()
-        except ValidationError as e:
-            raise serializers.ValidationError(e)
-
-        # проверка является ли пользователем менеджером организации для вновь создаваемой сущности        
-        if 'manager' in self.context:
-            if data['provider'] not in self.context['manager'].providers.all():                
-                raise serializers.ValidationError({"provider": _("Attempt to create zone for unappropriate provider")})
-
-        return data
 
