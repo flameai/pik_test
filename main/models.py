@@ -24,7 +24,7 @@ class Provider(models.Model):
     email = models.EmailField(verbose_name="электронная почта")
     phone = models.CharField(max_length=10, verbose_name="телефон")
     address = models.CharField(max_length=250, verbose_name="адрес центрального офиса")
-    manager = models.OneToOneField(User, on_delete=models.DO_NOTHING, verbose_name="менеджер организации", null=False, blank=False, related_name="provider")
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, verbose_name="менеджер организации", null=False, blank=False, related_name="providers")
 
     def __str__(self):
         return self.name
